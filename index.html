@@ -8,101 +8,124 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
-  * { font-family: 'Inter', sans-serif; }
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
+
+  :root {
+    --bg: #F6F1E7;
+    --river1: #5B8A72;
+    --river2: #6D9F8C;
+    --rock: #8A6A58;
+    --wood: #C89B6D;
+    --accent: #D97941;
+    --ink: #2B2B2B;
+    --ink-soft: #5A5650;
+    --card: rgba(255,255,255,0.6);
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', sans-serif; margin:0; padding:0; background:var(--bg); color:var(--ink); overflow-x:hidden; }
   .serif { font-family: 'Fraunces', serif; }
-  html, body { margin:0; padding:0; background:#F4F1EB; overflow-x:hidden; }
   #root { min-height:100vh; }
 
-  ::-webkit-scrollbar { width:6px; }
-  ::-webkit-scrollbar-thumb { background:#9DB4C0; border-radius:4px; }
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-thumb { background:var(--river2); border-radius:4px; }
 
-  @keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px);} to {opacity:1; transform:translateY(0);} }
   @keyframes fadeOut { from { opacity:1; transform:scale(1);} to {opacity:0; transform:scale(0.7);} }
-  @keyframes floatCard { 0%,100% { transform:translateY(0px);} 50% { transform:translateY(-8px);} }
-  @keyframes drift { 0% { transform: translateX(0) rotate(0deg);} 100% { transform: translateX(8px) rotate(3deg);} }
-  @keyframes pulseGlow { 0%,100% { opacity:0.6;} 50% { opacity:1;} }
+  @keyframes floatCard { 0%,100% { transform:translateY(0px);} 50% { transform:translateY(-6px);} }
   @keyframes shimmer { 0% { background-position: -200% 0;} 100% { background-position: 200% 0;} }
+  @keyframes softPulse { 0%,100% { opacity:0.85;} 50% { opacity:1;} }
 
   .anim-fadeUp { animation: fadeUp 0.5s ease forwards; }
   .anim-fadeOut { animation: fadeOut 0.6s ease forwards; }
-  .anim-float { animation: floatCard 3.5s ease-in-out infinite; }
-  .anim-pulse { animation: pulseGlow 2.4s ease-in-out infinite; }
+  .anim-float { animation: floatCard 3.8s ease-in-out infinite; }
 
-  .chip {
-    transition: all 0.25s cubic-bezier(.4,0,.2,1);
-    user-select: none;
-  }
+  .chip { transition: all 0.22s cubic-bezier(.4,0,.2,1); user-select:none; -webkit-user-select:none; }
   .chip:active { transform: scale(0.96); }
-
-  .river-water {
-    fill: url(#riverGrad);
-  }
-
-  .progress-dot { transition: all 0.3s ease; }
 
   input[type=range] {
     -webkit-appearance: none;
-    height: 6px;
-    border-radius: 4px;
-    background: #D8E2DC;
+    appearance: none;
+    height: 10px;
+    border-radius: 6px;
+    background: #E5DDCB;
     outline: none;
+    width: 100%;
   }
   input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none;
-    width: 22px; height: 22px;
+    width: 32px; height: 32px;
     border-radius: 50%;
-    background: #4A7C82;
+    background: var(--river1);
     cursor: pointer;
-    box-shadow: 0 2px 6px rgba(74,124,130,0.4);
-    border: 3px solid white;
+    box-shadow: 0 3px 10px rgba(91,138,114,0.45);
+    border: 4px solid white;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--river1);
+    cursor: pointer;
+    border: 4px solid white;
+    box-shadow: 0 3px 10px rgba(91,138,114,0.45);
   }
 
   .glass-card {
-    background: rgba(255,255,255,0.7);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255,255,255,0.5);
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.6);
   }
 
   .btn-primary {
-    background: linear-gradient(135deg, #4A7C82, #3A6268);
-    transition: all 0.25s ease;
+    background: linear-gradient(135deg, var(--river1), #3F6B57);
+    transition: all 0.22s ease;
   }
-  .btn-primary:active { transform: scale(0.97); }
-  .btn-primary:hover { box-shadow: 0 8px 24px rgba(74,124,130,0.35); transform: translateY(-1px); }
+  .btn-primary:active { transform: scale(0.96); }
+
+  .btn-accent {
+    background: linear-gradient(135deg, var(--accent), #B85F2A);
+    transition: all 0.22s ease;
+  }
+  .btn-accent:active { transform: scale(0.96); }
+
+  .text-input {
+    font-size: 22px;
+    line-height: 1.4;
+  }
+  .text-input::placeholder { color: #B5AD9C; }
 
   .scenario-shimmer {
-    background: linear-gradient(90deg, #4A7C82 0%, #7FB3BA 50%, #4A7C82 100%);
+    background: linear-gradient(90deg, var(--river1) 0%, var(--river2) 50%, var(--river1) 100%);
     background-size: 200% 100%;
-    animation: shimmer 2s linear infinite;
+    animation: shimmer 1.8s linear infinite;
   }
+
+  .progress-dot { transition: all 0.3s ease; }
 </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef, useReducer } = React;
+const { useState, useEffect, useRef } = React;
 
 /* ---------------------------- CONSTANTS ---------------------------- */
 
 const ROLES_REMOVE = ["Clinician","Parent","Partner","Friend","Student","Manager","Carer","Homeowner","Athlete","Volunteer"];
-
 const ROLE_CATEGORIES = ["Worker","Learner","Friend","Caregiver","Creator","Athlete","Volunteer","Partner","Community Member"];
 
 const TIME_ACTIVITIES = [
-  { name: "Work", color: "#4A7C82" },
-  { name: "Sleep", color: "#6B5B95" },
-  { name: "Exercise", color: "#E07A5F" },
-  { name: "Family", color: "#81B29A" },
-  { name: "Social", color: "#F2CC8F" },
+  { name: "Work", color: "#5B8A72" },
+  { name: "Sleep", color: "#6D5F8C" },
+  { name: "Exercise", color: "#D97941" },
+  { name: "Family", color: "#6D9F8C" },
+  { name: "Social", color: "#D9A441" },
   { name: "Leisure", color: "#9D8189" },
-  { name: "Admin", color: "#A8A8A8" },
-  { name: "Commuting", color: "#7B9EA8" },
-  { name: "Recovery", color: "#C97B84" },
+  { name: "Admin", color: "#9A958A" },
+  { name: "Commuting", color: "#7B96A0" },
+  { name: "Recovery", color: "#C2766F" },
   { name: "Screen Time", color: "#5C6B73" },
 ];
 
@@ -139,8 +162,6 @@ const SECTION_TITLES = [
   "Life Event Simulator",
 ];
 
-/* ---------------------------- HELPERS ---------------------------- */
-
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 
 /* ---------------------------- PROGRESS BAR ---------------------------- */
@@ -154,9 +175,9 @@ function ProgressDots({ step, total, onJump }) {
           onClick={() => onJump(i)}
           className="progress-dot rounded-full"
           style={{
-            width: i === step ? '28px' : '8px',
-            height: '8px',
-            background: i === step ? '#4A7C82' : (i < step ? '#9DB4C0' : '#D8E2DC'),
+            width: i === step ? '30px' : '10px',
+            height: '10px',
+            background: i === step ? 'var(--river1)' : (i < step ? 'var(--river2)' : '#E5DDCB'),
           }}
         />
       ))}
@@ -168,28 +189,28 @@ function ProgressDots({ step, total, onJump }) {
 
 function Shell({ children, step, total, onJump, onNext, onBack, nextLabel, nextDisabled, hideNext }) {
   return (
-    <div className="min-h-screen flex flex-col" style={{background: 'linear-gradient(180deg, #F4F1EB 0%, #EAF1EF 100%)'}}>
-      <div className="px-4 pt-4">
+    <div className="min-h-screen flex flex-col" style={{background: 'var(--bg)'}}>
+      <div style={{padding: '16px 20px 0 20px'}}>
         <ProgressDots step={step} total={total} onJump={onJump} />
-        <div className="text-center mb-1">
-          <span className="text-xs tracking-widest uppercase text-gray-400 font-semibold">
-            Section {step + 1} of {total}
+        <div style={{textAlign:'center', marginBottom:'6px'}}>
+          <span style={{fontSize:'15px', letterSpacing:'0.08em', textTransform:'uppercase', color:'#A39B89', fontWeight:700}}>
+            {step + 1} / {total}
           </span>
         </div>
-        <h2 className="serif text-center text-2xl md:text-3xl text-gray-800 font-semibold mb-2">
+        <h2 className="serif" style={{textAlign:'center', fontSize:'clamp(34px,9vw,48px)', color:'var(--ink)', fontWeight:600, lineHeight:1.1, margin:'0 0 18px 0'}}>
           {SECTION_TITLES[step]}
         </h2>
       </div>
 
-      <div className="flex-1 px-4 pb-4 flex flex-col items-center justify-start max-w-3xl mx-auto w-full">
+      <div style={{flex:1, padding:'0 18px 20px 18px', display:'flex', flexDirection:'column', alignItems:'center', maxWidth:'640px', margin:'0 auto', width:'100%'}}>
         {children}
       </div>
 
-      <div className="px-4 pb-6 pt-2 flex items-center justify-between max-w-3xl mx-auto w-full">
+      <div style={{padding:'14px 20px 28px 20px', display:'flex', alignItems:'center', justifyContent:'space-between', maxWidth:'640px', margin:'0 auto', width:'100%'}}>
         <button
           onClick={onBack}
           disabled={step === 0}
-          className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 disabled:opacity-0 transition-opacity"
+          style={{fontSize:'20px', fontWeight:600, color:'#A39B89', opacity: step===0?0:1, transition:'opacity 0.2s', padding:'10px 6px', background:'none', border:'none'}}
         >
           ← Back
         </button>
@@ -197,7 +218,8 @@ function Shell({ children, step, total, onJump, onNext, onBack, nextLabel, nextD
           <button
             onClick={onNext}
             disabled={nextDisabled}
-            className="btn-primary text-white px-7 py-3 rounded-full font-semibold text-sm shadow-lg disabled:opacity-40 disabled:pointer-events-none"
+            className="btn-primary"
+            style={{color:'white', padding:'16px 30px', borderRadius:'999px', fontWeight:700, fontSize:'22px', boxShadow:'0 8px 24px rgba(91,138,114,0.3)', border:'none', opacity: nextDisabled?0.4:1}}
           >
             {nextLabel || "Continue →"}
           </button>
@@ -210,9 +232,8 @@ function Shell({ children, step, total, onJump, onNext, onBack, nextLabel, nextD
 /* ---------------------------- SECTION 1: REMOVE YOUR LABELS ---------------------------- */
 
 function Section1({ data, setData }) {
-  const [phase, setPhase] = useState(data.removed ? 2 : 0); // 0=select, 1=animating, 2=reflect
+  const [phase, setPhase] = useState(data.removed ? 2 : 0);
   const [selected, setSelected] = useState(data.selectedRoles || []);
-  const [reflection, setReflection] = useState(data.reflection || "");
   const [words, setWords] = useState(data.words || []);
   const [input, setInput] = useState("");
 
@@ -233,35 +254,34 @@ function Section1({ data, setData }) {
     const w = input.trim();
     const newWords = [...words, w];
     setWords(newWords);
-    setData(d => ({...d, words: newWords, reflection: ""}));
+    setData(d => ({...d, words: newWords}));
     setInput("");
   };
 
-  // word frequency for sizing
   const freq = {};
   words.forEach(w => { const k = w.toLowerCase(); freq[k] = (freq[k]||0)+1; });
   const uniqueWords = [...new Set(words.map(w=>w.toLowerCase()))];
 
   if (phase === 0 || phase === 1) {
     return (
-      <div className="w-full flex flex-col items-center anim-fadeUp">
-        <p className="text-gray-600 text-center mb-6 max-w-md">
+      <div className="anim-fadeUp" style={{width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
+        <p style={{fontSize:'22px', color:'var(--ink-soft)', textAlign:'center', marginBottom:'22px', maxWidth:'480px', lineHeight:1.4}}>
           Select every role you carry day to day. Then we'll let them go.
         </p>
-        <div className="flex flex-wrap gap-2.5 justify-center mb-8">
+        <div style={{display:'flex', flexDirection:'column', gap:'12px', width:'100%', marginBottom:'28px'}}>
           {ROLES_REMOVE.map(role => {
             const isSelected = selected.includes(role);
             return (
               <button
                 key={role}
                 onClick={() => phase===0 && toggle(role)}
-                className={`chip px-4 py-2.5 rounded-full text-sm font-medium border-2 ${
-                  phase === 1 && isSelected ? 'anim-fadeOut' : ''
-                }`}
+                className={`chip ${phase === 1 && isSelected ? 'anim-fadeOut' : ''}`}
                 style={{
-                  borderColor: isSelected ? '#4A7C82' : '#D8E2DC',
-                  background: isSelected ? '#4A7C82' : 'white',
-                  color: isSelected ? 'white' : '#5A6B6E',
+                  fontSize:'24px', fontWeight:600, padding:'18px 22px', borderRadius:'18px',
+                  border: `2.5px solid ${isSelected ? 'var(--river1)' : '#E5DDCB'}`,
+                  background: isSelected ? 'var(--river1)' : 'white',
+                  color: isSelected ? 'white' : 'var(--ink-soft)',
+                  width:'100%', textAlign:'left'
                 }}
               >
                 {role}
@@ -273,7 +293,8 @@ function Section1({ data, setData }) {
           <button
             onClick={removeLabels}
             disabled={selected.length === 0}
-            className="btn-primary text-white px-8 py-3.5 rounded-full font-semibold shadow-lg disabled:opacity-30"
+            className="btn-primary"
+            style={{color:'white', padding:'18px 36px', borderRadius:'999px', fontWeight:700, fontSize:'24px', boxShadow:'0 8px 24px rgba(91,138,114,0.3)', border:'none', opacity:selected.length===0?0.3:1, width:'100%'}}
           >
             Let them go ✦
           </button>
@@ -283,39 +304,37 @@ function Section1({ data, setData }) {
   }
 
   return (
-    <div className="w-full flex flex-col items-center anim-fadeUp">
-      <p className="serif text-xl md:text-2xl text-gray-700 text-center mb-1 italic">
-        "If all of these disappeared tomorrow,
-      </p>
-      <p className="serif text-xl md:text-2xl text-gray-700 text-center mb-6 italic">
-        what would remain?"
+    <div className="anim-fadeUp" style={{width:'100%', display:'flex', flexDirection:'column', alignItems:'center'}}>
+      <p className="serif" style={{fontSize:'clamp(28px,7.5vw,38px)', color:'var(--ink)', textAlign:'center', fontStyle:'italic', lineHeight:1.25, marginBottom:'24px'}}>
+        "Which role would hurt most to lose?"
       </p>
 
-      <div className="flex gap-2 w-full max-w-md mb-6">
+      <div style={{display:'flex', gap:'10px', width:'100%', marginBottom:'22px'}}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && addWord()}
           placeholder="One word or phrase..."
-          className="flex-1 px-4 py-3 rounded-full border-2 border-gray-200 focus:border-teal-600 outline-none text-sm"
+          className="text-input"
+          style={{flex:1, padding:'16px 20px', borderRadius:'999px', border:'2.5px solid #E5DDCB', outline:'none', background:'white'}}
         />
-        <button onClick={addWord} className="btn-primary text-white px-5 rounded-full font-medium text-sm">
+        <button onClick={addWord} className="btn-primary" style={{color:'white', padding:'0 22px', borderRadius:'999px', fontWeight:700, fontSize:'20px', border:'none'}}>
           Add
         </button>
       </div>
 
-      <div className="glass-card rounded-3xl p-6 w-full min-h-[180px] flex flex-wrap gap-3 items-center justify-center content-center">
+      <div className="glass-card" style={{borderRadius:'28px', padding:'24px', width:'100%', minHeight:'160px', display:'flex', flexWrap:'wrap', gap:'14px', alignItems:'center', justifyContent:'center', alignContent:'center'}}>
         {words.length === 0 && (
-          <span className="text-gray-400 text-sm italic">Your words will gather here...</span>
+          <span style={{color:'#B5AD9C', fontSize:'20px', fontStyle:'italic'}}>Your words will gather here...</span>
         )}
         {uniqueWords.map((w, i) => {
-          const size = clamp(14 + freq[w]*8, 14, 42);
-          const colors = ['#4A7C82','#81B29A','#E07A5F','#6B5B95','#9D8189'];
+          const size = clamp(20 + freq[w]*10, 20, 52);
+          const colors = ['#5B8A72','#6D9F8C','#D97941','#6D5F8C','#9D8189'];
           return (
             <span
               key={w+i}
-              className="serif font-semibold anim-fadeUp"
-              style={{fontSize: `${size}px`, color: colors[i % colors.length], animationDelay: `${i*0.05}s`}}
+              className="serif anim-fadeUp"
+              style={{fontSize: `${size}px`, fontWeight:600, color: colors[i % colors.length], animationDelay: `${i*0.05}s`}}
             >
               {w}
             </span>
@@ -342,25 +361,25 @@ function RadarChart({ values, id }) {
         labels: ROLE_CATEGORIES,
         datasets: [{
           data: ROLE_CATEGORIES.map(c => values[c] || 0),
-          backgroundColor: 'rgba(74,124,130,0.25)',
-          borderColor: '#4A7C82',
-          borderWidth: 2.5,
-          pointBackgroundColor: '#4A7C82',
-          pointRadius: 4,
+          backgroundColor: 'rgba(91,138,114,0.25)',
+          borderColor: '#5B8A72',
+          borderWidth: 3,
+          pointBackgroundColor: '#5B8A72',
+          pointRadius: 5,
         }]
       },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        animation: { duration: 600 },
+        animation: { duration: 500 },
         plugins: { legend: { display: false } },
         scales: {
           r: {
             min: 0, max: 10,
-            ticks: { display: false, stepSize: 2 },
-            grid: { color: '#D8E2DC' },
-            angleLines: { color: '#D8E2DC' },
-            pointLabels: { font: { size: 10, weight: '600' }, color: '#5A6B6E' }
+            ticks: { display: false },
+            grid: { color: '#E5DDCB' },
+            angleLines: { color: '#E5DDCB' },
+            pointLabels: { font: { size: 13, weight: '700' }, color: '#5A5650' }
           }
         }
       }
@@ -383,47 +402,51 @@ function Section2({ data, setData }) {
   };
 
   return (
-    <div className="w-full anim-fadeUp">
-      <div className="glass-card rounded-3xl p-4 mb-5 flex justify-center">
-        <div style={{maxWidth: '320px', width: '100%'}}>
+    <div className="anim-fadeUp" style={{width:'100%'}}>
+      <p style={{fontSize:'22px', color:'var(--ink-soft)', textAlign:'center', marginBottom:'18px', lineHeight:1.4}}>
+        Rate identity importance from 0–10
+      </p>
+      <div className="glass-card" style={{borderRadius:'28px', padding:'18px', marginBottom:'24px', display:'flex', justifyContent:'center'}}>
+        <div style={{maxWidth:'320px', width:'100%'}}>
           <RadarChart values={values} id="radar1" />
         </div>
       </div>
 
-      <div className="space-y-3 mb-6">
+      <div style={{display:'flex', flexDirection:'column', gap:'20px', marginBottom:'28px'}}>
         {ROLE_CATEGORIES.map(cat => (
-          <div key={cat} className="flex items-center gap-3">
-            <span className="text-sm font-medium text-gray-600 w-32 flex-shrink-0">{cat}</span>
+          <div key={cat}>
+            <div style={{display:'flex', justifyContent:'space-between', marginBottom:'8px'}}>
+              <span style={{fontSize:'22px', fontWeight:600, color:'var(--ink)'}}>{cat}</span>
+              <span style={{fontSize:'22px', fontWeight:800, color:'var(--river1)'}}>{values[cat]}</span>
+            </div>
             <input
               type="range" min="0" max="10" value={values[cat]}
               onChange={e => update(cat, e.target.value)}
-              className="flex-1"
             />
-            <span className="text-sm font-bold text-teal-700 w-5">{values[cat]}</span>
           </div>
         ))}
       </div>
 
-      <div className="space-y-3">
+      <div style={{display:'flex', flexDirection:'column', gap:'24px'}}>
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-2">Which role has grown most in the last 5 years?</p>
-          <div className="flex flex-wrap gap-2">
+          <p style={{fontSize:'22px', fontWeight:600, color:'var(--ink)', marginBottom:'12px', lineHeight:1.3}}>Which role has grown most in the last 5 years?</p>
+          <div style={{display:'flex', flexWrap:'wrap', gap:'10px'}}>
             {ROLE_CATEGORIES.map(c => (
               <button key={c} onClick={() => { setGrown(c); setData(d=>({...d, grown: c})); }}
-                className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
-                style={{borderColor: grown===c?'#81B29A':'#D8E2DC', background: grown===c?'#81B29A':'white', color: grown===c?'white':'#5A6B6E'}}>
+                className="chip"
+                style={{fontSize:'18px', fontWeight:600, padding:'10px 16px', borderRadius:'999px', border:`2px solid ${grown===c?'var(--river2)':'#E5DDCB'}`, background: grown===c?'var(--river2)':'white', color: grown===c?'white':'var(--ink-soft)'}}>
                 {c}
               </button>
             ))}
           </div>
         </div>
         <div>
-          <p className="text-sm font-medium text-gray-600 mb-2">Which role has faded?</p>
-          <div className="flex flex-wrap gap-2">
+          <p style={{fontSize:'22px', fontWeight:600, color:'var(--ink)', marginBottom:'12px', lineHeight:1.3}}>Which role has faded?</p>
+          <div style={{display:'flex', flexWrap:'wrap', gap:'10px'}}>
             {ROLE_CATEGORIES.map(c => (
               <button key={c} onClick={() => { setFaded(c); setData(d=>({...d, faded: c})); }}
-                className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
-                style={{borderColor: faded===c?'#E07A5F':'#D8E2DC', background: faded===c?'#E07A5F':'white', color: faded===c?'white':'#5A6B6E'}}>
+                className="chip"
+                style={{fontSize:'18px', fontWeight:600, padding:'10px 16px', borderRadius:'999px', border:`2px solid ${faded===c?'var(--accent)':'#E5DDCB'}`, background: faded===c?'var(--accent)':'white', color: faded===c?'white':'var(--ink-soft)'}}>
                 {c}
               </button>
             ))}
@@ -449,43 +472,46 @@ function Section3({ data, setData }) {
     setData(d => ({...d, timeAssignments: na}));
   };
 
-  // time totals
   const totals = {};
   Object.values(assignments).forEach(a => { totals[a] = (totals[a]||0) + 1; });
 
   return (
-    <div className="w-full anim-fadeUp">
-      <p className="text-sm text-gray-600 text-center mb-3">
+    <div className="anim-fadeUp" style={{width:'100%'}}>
+      <p style={{fontSize:'22px', color:'var(--ink-soft)', textAlign:'center', marginBottom:'18px', lineHeight:1.4}}>
         Pick an activity, then tap hours to fill your day.
       </p>
-      <div className="flex flex-wrap gap-2 justify-center mb-5">
+      <div style={{display:'flex', flexWrap:'wrap', gap:'8px', justifyContent:'center', marginBottom:'22px'}}>
         {TIME_ACTIVITIES.map(act => (
           <button
             key={act.name}
             onClick={() => setSelectedActivity(act.name)}
-            className="chip px-3 py-2 rounded-full text-xs font-semibold border-2 flex items-center gap-1.5"
+            className="chip"
             style={{
-              borderColor: selectedActivity===act.name ? act.color : '#E5E5E5',
+              fontSize:'18px', fontWeight:700, padding:'10px 16px', borderRadius:'999px',
+              border: `2.5px solid ${selectedActivity===act.name ? act.color : '#E5DDCB'}`,
               background: selectedActivity===act.name ? act.color : 'white',
-              color: selectedActivity===act.name ? 'white' : '#5A6B6E',
+              color: selectedActivity===act.name ? 'white' : 'var(--ink-soft)',
+              display:'flex', alignItems:'center', gap:'8px'
             }}
           >
-            <span className="w-2 h-2 rounded-full" style={{background: selectedActivity===act.name?'white':act.color}}></span>
+            <span style={{width:'10px', height:'10px', borderRadius:'50%', background: selectedActivity===act.name?'white':act.color}}></span>
             {act.name}
           </button>
         ))}
       </div>
 
-      <div className="grid grid-cols-6 gap-1.5 mb-6">
+      <div style={{display:'grid', gridTemplateColumns:'repeat(4, 1fr)', gap:'8px', marginBottom:'26px'}}>
         {hours.map(h => {
           const act = assignments[h];
-          const color = act ? TIME_ACTIVITIES.find(a=>a.name===act)?.color : '#EDEAE3';
+          const color = act ? TIME_ACTIVITIES.find(a=>a.name===act)?.color : '#EDE6D6';
           return (
             <button
               key={h}
               onClick={() => assign(h)}
-              className="aspect-square rounded-lg flex items-center justify-center text-[10px] font-bold transition-all"
-              style={{background: color, color: act ? 'white' : '#A8A8A8'}}
+              style={{
+                aspectRatio:'1', borderRadius:'14px', display:'flex', alignItems:'center', justifyContent:'center',
+                fontSize:'15px', fontWeight:700, background: color, color: act ? 'white' : '#A39B89', border:'none'
+              }}
             >
               {h}:00
             </button>
@@ -494,18 +520,20 @@ function Section3({ data, setData }) {
       </div>
 
       {Object.keys(totals).length > 0 && (
-        <div className="glass-card rounded-2xl p-4 mb-5">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Hours allocated</p>
-          <div className="space-y-1.5">
+        <div className="glass-card" style={{borderRadius:'24px', padding:'20px', marginBottom:'24px'}}>
+          <p style={{fontSize:'16px', fontWeight:800, color:'#A39B89', textTransform:'uppercase', letterSpacing:'0.05em', marginBottom:'14px'}}>Hours allocated</p>
+          <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
             {Object.entries(totals).map(([name, count]) => {
               const color = TIME_ACTIVITIES.find(a=>a.name===name)?.color;
               return (
-                <div key={name} className="flex items-center gap-2">
-                  <span className="text-xs w-24 text-gray-600">{name}</span>
-                  <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{width: `${(count/24)*100}%`, background: color}}></div>
+                <div key={name}>
+                  <div style={{display:'flex', justifyContent:'space-between', marginBottom:'4px'}}>
+                    <span style={{fontSize:'18px', color:'var(--ink)', fontWeight:600}}>{name}</span>
+                    <span style={{fontSize:'18px', fontWeight:800, color:'#A39B89'}}>{count}h</span>
                   </div>
-                  <span className="text-xs font-bold text-gray-500 w-6">{count}h</span>
+                  <div style={{height:'10px', borderRadius:'999px', background:'#EDE6D6', overflow:'hidden'}}>
+                    <div style={{height:'100%', borderRadius:'999px', width: `${(count/24)*100}%`, background: color, transition:'width 0.3s'}}></div>
+                  </div>
                 </div>
               );
             })}
@@ -514,18 +542,18 @@ function Section3({ data, setData }) {
       )}
 
       <div>
-        <p className="text-sm font-medium text-gray-600 mb-2 text-center">Which activity gives you the most meaning?</p>
-        <div className="flex flex-wrap gap-2 justify-center">
+        <p style={{fontSize:'22px', fontWeight:600, color:'var(--ink)', textAlign:'center', marginBottom:'14px', lineHeight:1.3}}>Which activity gives you the most meaning?</p>
+        <div style={{display:'flex', flexWrap:'wrap', gap:'10px', justifyContent:'center'}}>
           {TIME_ACTIVITIES.map(act => (
             <button key={act.name} onClick={() => { setMeaningful(act.name); setData(d=>({...d, meaningfulActivity: act.name})); }}
-              className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
-              style={{borderColor: meaningful===act.name?act.color:'#D8E2DC', background: meaningful===act.name?act.color:'white', color: meaningful===act.name?'white':'#5A6B6E'}}>
+              className="chip"
+              style={{fontSize:'18px', fontWeight:600, padding:'10px 16px', borderRadius:'999px', border:`2px solid ${meaningful===act.name?act.color:'#E5DDCB'}`, background: meaningful===act.name?act.color:'white', color: meaningful===act.name?'white':'var(--ink-soft)'}}>
               {act.name}
             </button>
           ))}
         </div>
         {meaningful && totals[meaningful] !== undefined && totals[meaningful] <= 2 && (
-          <p className="text-center text-xs text-orange-600 mt-3 italic">
+          <p style={{textAlign:'center', fontSize:'18px', color:'var(--accent)', marginTop:'16px', fontStyle:'italic', lineHeight:1.4}}>
             ⚡ {meaningful} gives you the most meaning, but only got {totals[meaningful]||0} hour{totals[meaningful]===1?'':'s'} today.
           </p>
         )}
@@ -539,7 +567,6 @@ function Section3({ data, setData }) {
 function Section4({ data, setData }) {
   const [entries, setEntries] = useState(data.secretEntries || []);
   const [input, setInput] = useState("");
-  const [votes, setVotes] = useState(data.votes || {});
 
   const submit = () => {
     if (!input.trim()) return;
@@ -549,53 +576,27 @@ function Section4({ data, setData }) {
     setInput("");
   };
 
-  const vote = (entryId, fn) => {
-    const key = `${entryId}-${fn}`;
-    const nv = {...votes, [key]: (votes[key]||0)+1};
-    setVotes(nv);
-    setData(d => ({...d, votes: nv}));
-  };
-
   return (
-    <div className="w-full anim-fadeUp">
-      <p className="serif text-lg text-gray-700 text-center mb-4 italic max-w-md mx-auto">
+    <div className="anim-fadeUp" style={{width:'100%'}}>
+      <p className="serif" style={{fontSize:'clamp(24px,6.5vw,32px)', color:'var(--ink)', textAlign:'center', fontStyle:'italic', marginBottom:'22px', lineHeight:1.3}}>
         "What occupation helps you cope that most people would never guess?"
       </p>
-      <div className="flex gap-2 mb-6">
+      <div style={{display:'flex', gap:'10px', marginBottom:'24px'}}>
         <input
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && submit()}
           placeholder="Share anonymously..."
-          className="flex-1 px-4 py-3 rounded-full border-2 border-gray-200 focus:border-teal-600 outline-none text-sm"
+          className="text-input"
+          style={{flex:1, padding:'16px 20px', borderRadius:'999px', border:'2.5px solid #E5DDCB', outline:'none', background:'white'}}
         />
-        <button onClick={submit} className="btn-primary text-white px-5 rounded-full font-medium text-sm">Share</button>
+        <button onClick={submit} className="btn-primary" style={{color:'white', padding:'0 24px', borderRadius:'999px', fontWeight:700, fontSize:'20px', border:'none'}}>Share</button>
       </div>
 
-      <div className="space-y-4">
-        {entries.length === 0 && (
-          <p className="text-center text-gray-400 text-sm italic py-8">Your shared occupation will appear below for voting...</p>
-        )}
+      <div style={{display:'flex', flexDirection:'column', gap:'16px'}}>
         {entries.map((e, i) => (
-          <div key={e.id} className="glass-card rounded-2xl p-4 anim-float" style={{animationDelay: `${i*0.3}s`}}>
-            <p className="serif text-gray-800 font-medium mb-3">"{e.text}"</p>
-            <p className="text-xs text-gray-500 mb-2">What function might this serve?</p>
-            <div className="flex flex-wrap gap-1.5">
-              {FUNCTIONS.map(fn => {
-                const key = `${e.id}-${fn}`;
-                const count = votes[key] || 0;
-                return (
-                  <button
-                    key={fn}
-                    onClick={() => vote(e.id, fn)}
-                    className="chip px-2.5 py-1 rounded-full text-[11px] font-medium border flex items-center gap-1"
-                    style={{borderColor: count>0?'#4A7C82':'#E5E5E5', background: count>0?'rgba(74,124,130,0.1)':'white', color: count>0?'#4A7C82':'#8A8A8A'}}
-                  >
-                    {fn} {count > 0 && <span className="font-bold">{count}</span>}
-                  </button>
-                );
-              })}
-            </div>
+          <div key={e.id} className="glass-card anim-float" style={{borderRadius:'22px', padding:'20px', animationDelay: `${i*0.3}s`}}>
+            <p className="serif" style={{fontSize:'24px', color:'var(--ink)', fontWeight:600, lineHeight:1.35}}>"{e.text}"</p>
           </div>
         ))}
       </div>
@@ -603,81 +604,174 @@ function Section4({ data, setData }) {
   );
 }
 
-/* ---------------------------- SECTION 5: BUILD YOUR RIVER (KAWA) ---------------------------- */
+/* ---------------------------- SECTION 5: BUILD YOUR RIVER (KAWA) — REDESIGNED ---------------------------- */
 
-function RiverSVG({ flow, rocks, driftwood, banks, eventActive }) {
-  // Map flow style to path turbulence
-  const flowStyles = {
-    "Fast & smooth": { amp: 6, freq: 2, speed: '3s', width: 110 },
-    "Steady": { amp: 10, freq: 2.5, speed: '5s', width: 100 },
-    "Slowed": { amp: 14, freq: 1.5, speed: '8s', width: 80 },
-    "Stagnant": { amp: 4, freq: 1, speed: '14s', width: 55 },
-    "Chaotic": { amp: 24, freq: 4, speed: '2s', width: 90 },
+// Generate an organic winding centerline using sine layering for a natural meander
+function generateRiverPath(width, height, turbulence, seed=0) {
+  const points = [];
+  const segments = 28;
+  for (let i = 0; i <= segments; i++) {
+    const t = i / segments;
+    const x = t * width;
+    const baseY = height * 0.5;
+    const meander = Math.sin(t * Math.PI * 2.2 + seed) * (height * 0.16)
+                  + Math.sin(t * Math.PI * 5 + seed * 1.7) * (height * 0.05 * turbulence);
+    points.push({ x, y: baseY + meander });
+  }
+  return points;
+}
+
+function smoothPath(points) {
+  if (points.length < 2) return '';
+  let d = `M ${points[0].x},${points[0].y}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[i];
+    const p1 = points[i+1];
+    const midX = (p0.x + p1.x) / 2;
+    const midY = (p0.y + p1.y) / 2;
+    d += ` Q ${p0.x},${p0.y} ${midX},${midY}`;
+  }
+  const last = points[points.length-1];
+  d += ` L ${last.x},${last.y}`;
+  return d;
+}
+
+function RiverCanvas({ flow, rocks, driftwood, banks }) {
+  const W = 380, H = 460;
+
+  const flowConfig = {
+    "Fast & smooth": { turbulence: 0.5, baseWidth: 92, speed: 2.2, opacity: 0.95 },
+    "Steady":        { turbulence: 0.8, baseWidth: 76, speed: 4,   opacity: 0.92 },
+    "Slowed":        { turbulence: 1.1, baseWidth: 58, speed: 7,   opacity: 0.85 },
+    "Stagnant":       { turbulence: 0.3, baseWidth: 40, speed: 16,  opacity: 0.7 },
+    "Chaotic":        { turbulence: 2.4, baseWidth: 70, speed: 1.4, opacity: 0.95 },
   };
-  const style = flowStyles[flow] || flowStyles["Steady"];
-  const bankNarrow = Math.max(0, banks.length * 4);
-  const effectiveWidth = clamp(style.width - bankNarrow - rocks.length * 3, 30, 130);
+  const cfg = flowConfig[flow] || flowConfig["Steady"];
+
+  const bankFactor = clamp(1 - banks.length * 0.06, 0.55, 1);
+  const rockFactor = clamp(1 - rocks.length * 0.025, 0.7, 1);
+  const riverWidth = cfg.baseWidth * bankFactor * rockFactor;
+
+  // vertical river (top to bottom) so it reads naturally on a tall phone screen
+  const centerline = generateRiverPath(H, W, cfg.turbulence, 1.3).map(p => ({ x: p.y, y: p.x }));
+  const pathD = smoothPath(centerline);
+
+  // bank curve offsets — wider/narrower landscape based on selected riverbank factors
+  const bankWidthExtra = banks.length * 14;
 
   return (
-    <svg viewBox="0 0 400 220" className="w-full h-auto">
+    <svg viewBox={`0 0 ${W} ${H}`} style={{width:'100%', height:'auto', display:'block'}}>
       <defs>
-        <linearGradient id="riverGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#7FB3BA" />
-          <stop offset="100%" stopColor="#4A7C82" />
+        <linearGradient id="riverGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#6D9F8C" />
+          <stop offset="55%" stopColor="#5B8A72" />
+          <stop offset="100%" stopColor="#4A7A60" />
         </linearGradient>
-        <linearGradient id="bankGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#D8C9A3" />
-          <stop offset="100%" stopColor="#C2B280" />
+        <linearGradient id="landGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#EFE7D4" />
+          <stop offset="100%" stopColor="#E5DABF" />
+        </linearGradient>
+        <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+          <stop offset="60%" stopColor="#F6F1E7" stopOpacity="0" />
+          <stop offset="100%" stopColor="#E8DEC8" stopOpacity="0.6" />
+        </radialGradient>
+        <filter id="softBlur"><feGaussianBlur stdDeviation="1.2" /></filter>
+        <linearGradient id="shine" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="white" stopOpacity="0.35" />
+          <stop offset="100%" stopColor="white" stopOpacity="0" />
         </linearGradient>
       </defs>
 
-      {/* banks */}
-      <rect x="0" y="0" width="400" height={(220-effectiveWidth)/2} fill="url(#bankGrad)" opacity={0.5 + banks.length*0.05} />
-      <rect x="0" y={220-(220-effectiveWidth)/2} width="400" height={(220-effectiveWidth)/2} fill="url(#bankGrad)" opacity={0.5 + banks.length*0.05} />
+      {/* landscape background */}
+      <rect x="0" y="0" width={W} height={H} fill="url(#landGrad)" />
 
-      {/* river path - animated wave */}
+      {/* subtle contour texture lines representing terrain shaped by riverbanks */}
+      {banks.map((b, i) => (
+        <path
+          key={b}
+          d={`M ${-20 + i*8},0 C ${W*0.3},${H*0.2+i*10} ${W*0.7},${H*0.6-i*8} ${W+20},${H}`}
+          stroke="#DCD0AF"
+          strokeWidth="1"
+          fill="none"
+          opacity="0.5"
+        />
+      ))}
+
+      {/* river bed shadow for depth */}
+      <path d={pathD} stroke="#3E6B53" strokeWidth={riverWidth + bankWidthExtra + 10} fill="none" strokeLinecap="round" opacity="0.25" filter="url(#softBlur)" />
+
+      {/* main river body */}
       <path
-        d={`M0,${110} 
-            C50,${110-style.amp} 100,${110+style.amp} 150,${110}
-            C200,${110-style.amp} 250,${110+style.amp} 300,${110}
-            C350,${110-style.amp} 380,${110+style.amp} 400,${110}`}
+        d={pathD}
         stroke="url(#riverGrad)"
-        strokeWidth={effectiveWidth}
+        strokeWidth={riverWidth + bankWidthExtra}
         fill="none"
         strokeLinecap="round"
-        opacity={eventActive ? 0.7 : 0.95}
+        opacity={cfg.opacity}
       >
         {flow !== 'Stagnant' && (
-          <animateTransform attributeName="transform" type="translate" from="0 0" to="-40 0" dur={style.speed} repeatCount="indefinite" />
+          <animate attributeName="stroke-dashoffset" from="0" to="-200" dur={`${cfg.speed}s`} repeatCount="indefinite" />
         )}
+        <animate attributeName="d" values={`${pathD};${smoothPath(generateRiverPath(H, W, cfg.turbulence, 2.6).map(p => ({x:p.y,y:p.x})))};${pathD}`} dur={`${cfg.speed*2.2}s`} repeatCount="indefinite" />
+      </path>
+      <path d={pathD} stroke="url(#shine)" strokeWidth={(riverWidth + bankWidthExtra)*0.4} fill="none" strokeLinecap="round" opacity="0.5">
+        <animate attributeName="d" values={`${pathD};${smoothPath(generateRiverPath(H, W, cfg.turbulence, 2.6).map(p => ({x:p.y,y:p.x})))};${pathD}`} dur={`${cfg.speed*2.2}s`} repeatCount="indefinite" />
       </path>
 
-      {/* rocks */}
-      {rocks.map((r, i) => (
-        <g key={r} transform={`translate(${60 + i*38}, ${100 + (i%2)*22})`}>
-          <ellipse cx="0" cy="0" rx="14" ry="10" fill="#8B8378" stroke="#6B6358" strokeWidth="1.5" />
-        </g>
-      ))}
+      {/* gentle water shimmer ripples */}
+      {flow !== 'Stagnant' && Array.from({length:5}).map((_,i) => {
+        const t = (i+0.5)/5;
+        const pt = centerline[Math.floor(t*centerline.length)];
+        return pt ? (
+          <ellipse key={i} cx={pt.x} cy={pt.y} rx="3" ry="1.4" fill="white" opacity="0.4">
+            <animate attributeName="opacity" values="0;0.5;0" dur={`${2.5+i*0.4}s`} repeatCount="indefinite" begin={`${i*0.5}s`} />
+            <animate attributeName="cy" values={`${pt.y};${pt.y+H*0.18};${pt.y+H*0.36}`} dur={`${cfg.speed*1.3}s`} repeatCount="indefinite" begin={`${i*0.5}s`} />
+          </ellipse>
+        ) : null;
+      })}
 
-      {/* driftwood */}
-      {driftwood.map((d, i) => (
-        <g key={d} transform={`translate(${280 - i*34}, ${95 + (i%3)*15})`} style={{animation: `drift 3s ease-in-out infinite alternate`, animationDelay: `${i*0.4}s`}}>
-          <rect x="-12" y="-3" width="24" height="6" rx="3" fill="#A0785A" />
-        </g>
-      ))}
+      {/* rocks — natural irregular stone shapes nestled in river */}
+      {rocks.map((r, i) => {
+        const t = (i+1)/(rocks.length+1);
+        const pt = centerline[Math.floor(t*centerline.length)] || {x:W/2,y:H/2};
+        const sz = 10 + (i%3)*4;
+        return (
+          <g key={r} transform={`translate(${pt.x + (i%2===0?-14:14)}, ${pt.y})`}>
+            <path d={`M ${-sz},0 Q ${-sz*0.6},${-sz} 0,${-sz*0.8} Q ${sz*0.7},${-sz*0.9} ${sz},${-sz*0.1} Q ${sz*0.8},${sz*0.7} 0,${sz*0.8} Q ${-sz*0.9},${sz*0.6} ${-sz},0 Z`}
+              fill="#8A6A58" opacity="0.92" />
+            <path d={`M ${-sz*0.6},${-sz*0.3} Q 0,${-sz*0.6} ${sz*0.5},${-sz*0.2}`} stroke="#A1816C" strokeWidth="1.5" fill="none" opacity="0.6" />
+          </g>
+        );
+      })}
+
+      {/* driftwood — drifting timber pieces */}
+      {driftwood.map((d, i) => {
+        const t = (i+0.7)/(driftwood.length+1);
+        const pt = centerline[Math.floor(t*centerline.length)] || {x:W/2,y:H/2};
+        return (
+          <g key={d} transform={`translate(${pt.x + (i%2===0?16:-16)}, ${pt.y})`}>
+            <rect x="-11" y="-2.5" width="22" height="5" rx="2.5" fill="#C89B6D" opacity="0.95" transform={`rotate(${(i*23)%40-20})`}>
+              <animateTransform attributeName="transform" type="translate" values="0,0; 0,8; 0,0" dur={`${3+i*0.6}s`} repeatCount="indefinite" additive="sum" />
+            </rect>
+          </g>
+        );
+      })}
+
+      <rect x="0" y="0" width={W} height={H} fill="url(#vignette)" />
     </svg>
   );
 }
 
-function DragChip({ label, onSelect, selected }) {
+function DragChip({ label, onSelect, selected, accent }) {
   return (
     <button
       onClick={onSelect}
-      className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
+      className="chip"
       style={{
-        borderColor: selected ? '#4A7C82' : '#D8E2DC',
-        background: selected ? '#4A7C82' : 'white',
-        color: selected ? 'white' : '#5A6B6E',
+        fontSize:'20px', fontWeight:600, padding:'12px 18px', borderRadius:'999px',
+        border: `2.5px solid ${selected ? accent : '#E5DDCB'}`,
+        background: selected ? accent : 'white',
+        color: selected ? 'white' : 'var(--ink-soft)',
       }}
     >
       {label}
@@ -686,7 +780,7 @@ function DragChip({ label, onSelect, selected }) {
 }
 
 function Section5({ data, setData }) {
-  const [step, setStep] = useState(0); // A flow, B rocks, C driftwood, D banks
+  const [step, setStep] = useState(0);
   const [flow, setFlow] = useState(data.flow || null);
   const [rocks, setRocks] = useState(data.rocks || []);
   const [driftwood, setDriftwood] = useState(data.driftwood || []);
@@ -699,54 +793,54 @@ function Section5({ data, setData }) {
   };
 
   const subSteps = [
-    { label: "A. Water Flow", desc: "How is your river moving right now?" },
-    { label: "B. Rocks (obstacles)", desc: "What restricts your flow?" },
-    { label: "C. Driftwood (resources)", desc: "What supports you?" },
-    { label: "D. Riverbanks (environment)", desc: "What shapes your context?" },
+    { label: "Water Flow", desc: "How is your river moving right now?", accent: "#5B8A72" },
+    { label: "Rocks", desc: "What restricts your flow?", accent: "#8A6A58" },
+    { label: "Driftwood", desc: "What supports you?", accent: "#C89B6D" },
+    { label: "Riverbanks", desc: "What shapes your context?", accent: "#D97941" },
   ];
 
   return (
-    <div className="w-full anim-fadeUp">
-      <div className="glass-card rounded-3xl p-4 mb-5">
-        <RiverSVG flow={flow || "Steady"} rocks={rocks} driftwood={driftwood} banks={banks} />
+    <div className="anim-fadeUp" style={{width:'100%'}}>
+      <div className="glass-card" style={{borderRadius:'28px', padding:'14px', marginBottom:'20px', overflow:'hidden'}}>
+        <RiverCanvas flow={flow || "Steady"} rocks={rocks} driftwood={driftwood} banks={banks} />
       </div>
 
-      <div className="flex gap-1.5 justify-center mb-4">
+      <div style={{display:'flex', gap:'8px', justifyContent:'center', marginBottom:'18px', flexWrap:'wrap'}}>
         {subSteps.map((s, i) => (
           <button key={i} onClick={() => setStep(i)}
-            className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"
-            style={{background: step===i?'#4A7C82':'#EDEAE3', color: step===i?'white':'#A8A8A8'}}>
-            {s.label.split('.')[0]}
+            style={{padding:'8px 14px', borderRadius:'999px', fontSize:'15px', fontWeight:800, textTransform:'uppercase', letterSpacing:'0.03em', border:'none',
+              background: step===i?s.accent:'#EDE6D6', color: step===i?'white':'#A39B89'}}>
+            {s.label}
           </button>
         ))}
       </div>
 
-      <p className="text-sm font-semibold text-gray-700 text-center mb-1">{subSteps[step].label}</p>
-      <p className="text-xs text-gray-500 text-center mb-4">{subSteps[step].desc}</p>
+      <p style={{fontSize:'26px', fontWeight:700, color:'var(--ink)', textAlign:'center', marginBottom:'4px', lineHeight:1.2}}>{subSteps[step].label}</p>
+      <p style={{fontSize:'19px', color:'var(--ink-soft)', textAlign:'center', marginBottom:'18px', lineHeight:1.4}}>{subSteps[step].desc}</p>
 
-      <div className="flex flex-wrap gap-2 justify-center mb-4">
+      <div style={{display:'flex', flexWrap:'wrap', gap:'10px', justifyContent:'center', marginBottom:'20px'}}>
         {step === 0 && FLOW_TYPES.map(f => (
           <button key={f.name} onClick={() => { setFlow(f.name); setData(d=>({...d, flow: f.name})); }}
-            className="chip px-3 py-2 rounded-xl text-xs font-medium border-2 text-left"
-            style={{borderColor: flow===f.name?'#4A7C82':'#E5E5E5', background: flow===f.name?'rgba(74,124,130,0.1)':'white'}}>
-            <div className="font-semibold" style={{color: flow===f.name?'#4A7C82':'#5A6B6E'}}>{f.name}</div>
-            <div className="text-[10px] text-gray-400">{f.desc}</div>
+            className="chip"
+            style={{padding:'14px 18px', borderRadius:'18px', border:`2.5px solid ${flow===f.name?'#5B8A72':'#E5DDCB'}`, background: flow===f.name?'rgba(91,138,114,0.12)':'white', textAlign:'left', minWidth:'150px'}}>
+            <div style={{fontSize:'20px', fontWeight:700, color: flow===f.name?'#5B8A72':'var(--ink-soft)'}}>{f.name}</div>
+            <div style={{fontSize:'15px', color:'#A39B89', marginTop:'2px'}}>{f.desc}</div>
           </button>
         ))}
         {step === 1 && ROCKS.map(r => (
-          <DragChip key={r} label={r} selected={rocks.includes(r)} onSelect={() => toggleArr(rocks, setRocks, r, 'rocks')} />
+          <DragChip key={r} label={r} selected={rocks.includes(r)} accent="#8A6A58" onSelect={() => toggleArr(rocks, setRocks, r, 'rocks')} />
         ))}
         {step === 2 && DRIFTWOOD.map(d => (
-          <DragChip key={d} label={d} selected={driftwood.includes(d)} onSelect={() => toggleArr(driftwood, setDriftwood, d, 'driftwood')} />
+          <DragChip key={d} label={d} selected={driftwood.includes(d)} accent="#C89B6D" onSelect={() => toggleArr(driftwood, setDriftwood, d, 'driftwood')} />
         ))}
         {step === 3 && RIVERBANKS.map(b => (
-          <DragChip key={b} label={b} selected={banks.includes(b)} onSelect={() => toggleArr(banks, setBanks, b, 'banks')} />
+          <DragChip key={b} label={b} selected={banks.includes(b)} accent="#D97941" onSelect={() => toggleArr(banks, setBanks, b, 'banks')} />
         ))}
       </div>
 
       {step < 3 && (
-        <div className="flex justify-center">
-          <button onClick={() => setStep(step+1)} className="text-sm font-medium text-teal-700 underline">
+        <div style={{display:'flex', justifyContent:'center'}}>
+          <button onClick={() => setStep(step+1)} style={{fontSize:'19px', fontWeight:700, color:'var(--river1)', textDecoration:'underline', background:'none', border:'none'}}>
             Next: {subSteps[step+1].label} →
           </button>
         </div>
@@ -761,7 +855,6 @@ function Section6({ data }) {
   const [scenario, setScenario] = useState(data.scenario || null);
   const [spinning, setSpinning] = useState(false);
   const [reflections, setReflections] = useState({ changed: "", lost: "", challenged: "" });
-  const summaryRef = useRef(null);
 
   const triggerScenario = () => {
     setSpinning(true);
@@ -776,40 +869,39 @@ function Section6({ data }) {
     const canvas = document.createElement('canvas');
     canvas.width = 800; canvas.height = 1000;
     const ctx = canvas.getContext('2d');
-    ctx.fillStyle = '#F4F1EB';
+    ctx.fillStyle = '#F6F1E7';
     ctx.fillRect(0,0,800,1000);
-    ctx.fillStyle = '#3A6268';
-    ctx.font = 'bold 32px Georgia';
+    ctx.fillStyle = '#2B2B2B';
+    ctx.font = 'bold 36px Georgia';
     ctx.textAlign = 'center';
     ctx.fillText('Who Are You When You Are Not Busy?', 400, 80);
-    ctx.font = '18px Georgia';
-    ctx.fillStyle = '#5A6B6E';
-    ctx.fillText('A snapshot of your river', 400, 115);
+    ctx.font = '20px Georgia';
+    ctx.fillStyle = '#5A5650';
+    ctx.fillText('A snapshot of your river', 400, 118);
 
-    ctx.font = '16px Georgia';
-    ctx.fillStyle = '#4A7C82';
-    let y = 180;
+    let y = 190;
     ctx.textAlign = 'left';
-    ctx.font = 'bold 18px Georgia';
-    ctx.fillText('Flow:', 80, y); ctx.font = '18px Georgia'; ctx.fillText(data.flow || '—', 200, y);
-    y += 40;
-    ctx.font = 'bold 18px Georgia';
-    ctx.fillText('Rocks:', 80, y); ctx.font = '16px Georgia';
-    ctx.fillText((data.rocks||[]).join(', ') || '—', 200, y);
-    y += 40;
-    ctx.font = 'bold 18px Georgia';
-    ctx.fillText('Driftwood:', 80, y); ctx.font = '16px Georgia';
-    ctx.fillText((data.driftwood||[]).join(', ') || '—', 200, y);
-    y += 40;
-    ctx.font = 'bold 18px Georgia';
-    ctx.fillText('Riverbanks:', 80, y); ctx.font = '16px Georgia';
-    ctx.fillText((data.banks||[]).join(', ') || '—', 200, y);
+    ctx.font = 'bold 22px Georgia';
+    ctx.fillStyle = '#5B8A72';
+    ctx.fillText('Flow:', 80, y); ctx.font = '20px Georgia'; ctx.fillStyle='#2B2B2B'; ctx.fillText(data.flow || '—', 220, y);
+    y += 48;
+    ctx.font = 'bold 22px Georgia'; ctx.fillStyle = '#8A6A58';
+    ctx.fillText('Rocks:', 80, y); ctx.font = '18px Georgia'; ctx.fillStyle='#2B2B2B';
+    ctx.fillText((data.rocks||[]).join(', ') || '—', 220, y);
+    y += 48;
+    ctx.font = 'bold 22px Georgia'; ctx.fillStyle = '#C89B6D';
+    ctx.fillText('Driftwood:', 80, y); ctx.font = '18px Georgia'; ctx.fillStyle='#2B2B2B';
+    ctx.fillText((data.driftwood||[]).join(', ') || '—', 220, y);
+    y += 48;
+    ctx.font = 'bold 22px Georgia'; ctx.fillStyle = '#D97941';
+    ctx.fillText('Riverbanks:', 80, y); ctx.font = '18px Georgia'; ctx.fillStyle='#2B2B2B';
+    ctx.fillText((data.banks||[]).join(', ') || '—', 220, y);
 
-    y += 70;
-    ctx.font = 'italic 16px Georgia';
-    ctx.fillStyle = '#7A8B8E';
+    y += 80;
+    ctx.font = 'italic 18px Georgia';
+    ctx.fillStyle = '#5A5650';
     ctx.fillText('"This is what occupational therapists explore', 80, y);
-    ctx.fillText('when understanding everyday life."', 80, y+26);
+    ctx.fillText('when understanding everyday life."', 80, y+28);
 
     const link = document.createElement('a');
     link.download = 'my-river-snapshot.png';
@@ -818,70 +910,73 @@ function Section6({ data }) {
   };
 
   return (
-    <div className="w-full anim-fadeUp" ref={summaryRef}>
-      <div className="text-center mb-5">
+    <div className="anim-fadeUp" style={{width:'100%'}}>
+      <div style={{textAlign:'center', marginBottom:'18px'}}>
         <button
           onClick={triggerScenario}
-          className="btn-primary text-white px-8 py-3.5 rounded-full font-semibold shadow-lg"
+          className="btn-accent"
+          style={{color:'white', padding:'18px 32px', borderRadius:'999px', fontWeight:700, fontSize:'24px', boxShadow:'0 8px 24px rgba(217,121,65,0.35)', border:'none', width:'100%'}}
         >
           {spinning ? "Changing the river..." : "Change the River 🌊"}
         </button>
       </div>
 
       {spinning && (
-        <div className="h-2 w-full rounded-full scenario-shimmer mb-6"></div>
+        <div className="scenario-shimmer" style={{height:'8px', width:'100%', borderRadius:'999px', marginBottom:'22px'}}></div>
       )}
 
       {scenario && !spinning && (
-        <div className="glass-card rounded-2xl p-5 mb-6 anim-fadeUp">
-          <p className="serif text-lg font-semibold text-gray-800 mb-2">{scenario.name}</p>
-          <p className="text-xs text-gray-500 mb-2">{scenario.impact}</p>
-          <p className="text-xs font-semibold text-gray-600 mb-1">What may be lost:</p>
-          <div className="flex flex-wrap gap-1.5">
+        <div className="glass-card anim-fadeUp" style={{borderRadius:'24px', padding:'22px', marginBottom:'24px'}}>
+          <p className="serif" style={{fontSize:'26px', fontWeight:700, color:'var(--ink)', marginBottom:'8px'}}>{scenario.name}</p>
+          <p style={{fontSize:'17px', color:'#A39B89', marginBottom:'10px'}}>{scenario.impact}</p>
+          <p style={{fontSize:'17px', fontWeight:700, color:'var(--ink-soft)', marginBottom:'6px'}}>What may be lost:</p>
+          <div style={{display:'flex', flexWrap:'wrap', gap:'8px'}}>
             {scenario.lost.map(l => (
-              <span key={l} className="px-2 py-1 rounded-full text-[11px] bg-orange-50 text-orange-700 border border-orange-200">{l}</span>
+              <span key={l} style={{padding:'8px 14px', borderRadius:'999px', fontSize:'16px', background:'rgba(217,121,65,0.1)', color:'#B85F2A', border:'1.5px solid rgba(217,121,65,0.3)'}}>{l}</span>
             ))}
           </div>
 
-          <div className="mt-4 space-y-2">
+          <div style={{marginTop:'18px', display:'flex', flexDirection:'column', gap:'10px'}}>
             <input placeholder="What changed?" value={reflections.changed}
               onChange={e=>setReflections({...reflections, changed:e.target.value})}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+              className="text-input" style={{width:'100%', padding:'14px 16px', borderRadius:'14px', border:'2px solid #E5DDCB', outline:'none', background:'white'}} />
             <input placeholder="What occupations were lost?" value={reflections.lost}
               onChange={e=>setReflections({...reflections, lost:e.target.value})}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+              className="text-input" style={{width:'100%', padding:'14px 16px', borderRadius:'14px', border:'2px solid #E5DDCB', outline:'none', background:'white'}} />
             <input placeholder="What identities were challenged?" value={reflections.challenged}
               onChange={e=>setReflections({...reflections, challenged:e.target.value})}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+              className="text-input" style={{width:'100%', padding:'14px 16px', borderRadius:'14px', border:'2px solid #E5DDCB', outline:'none', background:'white'}} />
           </div>
         </div>
       )}
 
-      <div className="glass-card rounded-3xl p-5 mb-5">
-        <p className="serif text-lg font-semibold text-gray-800 mb-3 text-center">Your Journey Summary</p>
+      <div className="glass-card" style={{borderRadius:'28px', padding:'20px', marginBottom:'20px'}}>
+        <p className="serif" style={{fontSize:'26px', fontWeight:700, color:'var(--ink)', textAlign:'center', marginBottom:'16px'}}>Your Journey Summary</p>
 
-        <div style={{maxWidth:'260px', margin:'0 auto'}} className="mb-4">
+        <div style={{maxWidth:'260px', margin:'0 auto 16px auto'}}>
           <RadarChart values={data.roleValues || {}} id="radarSummary" />
         </div>
 
-        <RiverSVG flow={data.flow || "Steady"} rocks={data.rocks||[]} driftwood={data.driftwood||[]} banks={data.banks||[]} eventActive={!!scenario} />
-
-        <div className="text-xs text-gray-600 space-y-1 mt-3">
-          <p><span className="font-semibold">Grown role:</span> {data.grown || "—"}</p>
-          <p><span className="font-semibold">Faded role:</span> {data.faded || "—"}</p>
-          <p><span className="font-semibold">Most meaningful activity:</span> {data.meaningfulActivity || "—"}</p>
+        <div style={{borderRadius:'20px', overflow:'hidden'}}>
+          <RiverCanvas flow={data.flow || "Steady"} rocks={data.rocks||[]} driftwood={data.driftwood||[]} banks={data.banks||[]} />
         </div>
 
-        <p className="serif italic text-sm text-gray-500 text-center mt-4 px-2">
+        <div style={{fontSize:'18px', color:'var(--ink-soft)', marginTop:'16px', display:'flex', flexDirection:'column', gap:'6px'}}>
+          <p><span style={{fontWeight:700, color:'var(--ink)'}}>Grown role:</span> {data.grown || "—"}</p>
+          <p><span style={{fontWeight:700, color:'var(--ink)'}}>Faded role:</span> {data.faded || "—"}</p>
+          <p><span style={{fontWeight:700, color:'var(--ink)'}}>Most meaningful activity:</span> {data.meaningfulActivity || "—"}</p>
+        </div>
+
+        <p className="serif" style={{fontSize:'19px', fontStyle:'italic', color:'#A39B89', textAlign:'center', marginTop:'20px', lineHeight:1.4}}>
           "This is what occupational therapists explore when understanding everyday life."
         </p>
       </div>
 
-      <div className="flex gap-3 justify-center">
-        <button onClick={downloadSnapshot} className="btn-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow">
+      <div style={{display:'flex', flexDirection:'column', gap:'12px'}}>
+        <button onClick={downloadSnapshot} className="btn-primary" style={{color:'white', padding:'16px', borderRadius:'999px', fontSize:'20px', fontWeight:700, border:'none'}}>
           ⬇ Download Snapshot
         </button>
-        <button onClick={() => window.location.reload()} className="px-5 py-2.5 rounded-full text-sm font-semibold border-2 border-gray-300 text-gray-600">
+        <button onClick={() => window.location.reload()} style={{padding:'16px', borderRadius:'999px', fontSize:'20px', fontWeight:700, border:'2.5px solid #E5DDCB', color:'var(--ink-soft)', background:'white'}}>
           ↺ Reset
         </button>
       </div>
@@ -913,7 +1008,7 @@ function App() {
     <Shell
       step={step} total={total} onJump={jump} onNext={next} onBack={back}
       hideNext={step === total-1}
-      nextLabel={step === 0 ? "Continue →" : "Continue →"}
+      nextLabel="Continue →"
     >
       {sections[step]}
     </Shell>
