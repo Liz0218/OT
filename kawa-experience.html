@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
+<title>Who Are You When You Are Not Busy?</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+  * { font-family: 'Inter', sans-serif; }
+  .serif { font-family: 'Fraunces', serif; }
+  html, body { margin:0; padding:0; background:#F4F1EB; overflow-x:hidden; }
+  #root { min-height:100vh; }
+
+  ::-webkit-scrollbar { width:6px; }
+  ::-webkit-scrollbar-thumb { background:#9DB4C0; border-radius:4px; }
+
+  @keyframes fadeUp { from { opacity:0; transform:translateY(16px);} to {opacity:1; transform:translateY(0);} }
+  @keyframes fadeOut { from { opacity:1; transform:scale(1);} to {opacity:0; transform:scale(0.7);} }
+  @keyframes floatCard { 0%,100% { transform:translateY(0px);} 50% { transform:translateY(-8px);} }
+  @keyframes drift { 0% { transform: translateX(0) rotate(0deg);} 100% { transform: translateX(8px) rotate(3deg);} }
+  @keyframes pulseGlow { 0%,100% { opacity:0.6;} 50% { opacity:1;} }
+  @keyframes shimmer { 0% { background-position: -200% 0;} 100% { background-position: 200% 0;} }
+
+  .anim-fadeUp { animation: fadeUp 0.5s ease forwards; }
+  .anim-fadeOut { animation: fadeOut 0.6s ease forwards; }
+  .anim-float { animation: floatCard 3.5s ease-in-out infinite; }
+  .anim-pulse { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+  .chip {
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    user-select: none;
+  }
+  .chip:active { transform: scale(0.96); }
+
+  .river-water {
+    fill: url(#riverGrad);
+  }
+
+  .progress-dot { transition: all 0.3s ease; }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    height: 6px;
+    border-radius: 4px;
+    background: #D8E2DC;
+    outline: none;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #4A7C82;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(74,124,130,0.4);
+    border: 3px solid white;
+  }
+
+  .glass-card {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.5);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #4A7C82, #3A6268);
+    transition: all 0.25s ease;
+  }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:hover { box-shadow: 0 8px 24px rgba(74,124,130,0.35); transform: translateY(-1px); }
+
+  .scenario-shimmer {
+    background: linear-gradient(90deg, #4A7C82 0%, #7FB3BA 50%, #4A7C82 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef, useReducer } = React;
+
+/* ---------------------------- CONSTANTS ---------------------------- */
+
+const ROLES_REMOVE = ["Clinician","Parent","Partner","Friend","Student","Manager","Carer","Homeowner","Athlete","Volunteer"];
+
+const ROLE_CATEGORIES = ["Worker","Learner","Friend","Caregiver","Creator","Athlete","Volunteer","Partner","Community Member"];
+
+const TIME_ACTIVITIES = [
+  { name: "Work", color: "#4A7C82" },
+  { name: "Sleep", color: "#6B5B95" },
+  { name: "Exercise", color: "#E07A5F" },
+  { name: "Family", color: "#81B29A" },
+  { name: "Social", color: "#F2CC8F" },
+  { name: "Leisure", color: "#9D8189" },
+  { name: "Admin", color: "#A8A8A8" },
+  { name: "Commuting", color: "#7B9EA8" },
+  { name: "Recovery", color: "#C97B84" },
+  { name: "Screen Time", color: "#5C6B73" },
+];
+
+const FUNCTIONS = ["Emotional regulation","Sensory regulation","Identity","Mastery","Escape","Connection","Routine"];
+
+const FLOW_TYPES = [
+  { name: "Fast & smooth", desc: "Energised, moving with ease" },
+  { name: "Steady", desc: "Consistent, manageable pace" },
+  { name: "Slowed", desc: "Tired, weighed down" },
+  { name: "Stagnant", desc: "Stuck, little movement" },
+  { name: "Chaotic", desc: "Turbulent, unpredictable" },
+];
+
+const ROCKS = ["Burnout","Fatigue","Illness","Grief","Financial pressure","Parenting","Anxiety","Cognitive overload","Role loss"];
+const DRIFTWOOD = ["Humour","Family","Exercise","Dog","Creativity","Skills","Faith","Friends","Financial stability"];
+const RIVERBANKS = ["Workplace","Housing","Healthcare system","Community","Culture","Transport","Family expectations"];
+
+const SCENARIOS = [
+  { name: "Retirement", lost: ["Worker role", "Daily structure", "Colleague connection"], impact: "Rocks added: Role loss, Identity gap" },
+  { name: "Loss of driver's licence", lost: ["Independent mobility", "Spontaneous social access"], impact: "Riverbanks narrow: Transport restricted" },
+  { name: "Dementia diagnosis", lost: ["Memory-dependent roles", "Some independence"], impact: "Flow becomes Chaotic, new rocks appear" },
+  { name: "Autism burnout", lost: ["Masking capacity", "Social occupations"], impact: "Flow slows to Stagnant" },
+  { name: "Major injury", lost: ["Physical occupations", "Work role temporarily"], impact: "Large rock added: physical limitation" },
+  { name: "New parenthood", lost: ["Sleep", "Personal leisure time"], impact: "River reshaped entirely — new driftwood: Family" },
+  { name: "Redundancy", lost: ["Worker identity", "Financial security", "Routine"], impact: "Riverbank collapses: Workplace removed" },
+];
+
+const SECTION_TITLES = [
+  "Remove Your Labels",
+  "Role Identity Map",
+  "Time Use vs Meaning",
+  "Secret Occupations",
+  "Build Your River",
+  "Life Event Simulator",
+];
+
+/* ---------------------------- HELPERS ---------------------------- */
+
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+
+/* ---------------------------- PROGRESS BAR ---------------------------- */
+
+function ProgressDots({ step, total, onJump }) {
+  return (
+    <div className="flex items-center justify-center gap-2 py-3">
+      {Array.from({length: total}).map((_, i) => (
+        <button
+          key={i}
+          onClick={() => onJump(i)}
+          className="progress-dot rounded-full"
+          style={{
+            width: i === step ? '28px' : '8px',
+            height: '8px',
+            background: i === step ? '#4A7C82' : (i < step ? '#9DB4C0' : '#D8E2DC'),
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION SHELL ---------------------------- */
+
+function Shell({ children, step, total, onJump, onNext, onBack, nextLabel, nextDisabled, hideNext }) {
+  return (
+    <div className="min-h-screen flex flex-col" style={{background: 'linear-gradient(180deg, #F4F1EB 0%, #EAF1EF 100%)'}}>
+      <div className="px-4 pt-4">
+        <ProgressDots step={step} total={total} onJump={onJump} />
+        <div className="text-center mb-1">
+          <span className="text-xs tracking-widest uppercase text-gray-400 font-semibold">
+            Section {step + 1} of {total}
+          </span>
+        </div>
+        <h2 className="serif text-center text-2xl md:text-3xl text-gray-800 font-semibold mb-2">
+          {SECTION_TITLES[step]}
+        </h2>
+      </div>
+
+      <div className="flex-1 px-4 pb-4 flex flex-col items-center justify-start max-w-3xl mx-auto w-full">
+        {children}
+      </div>
+
+      <div className="px-4 pb-6 pt-2 flex items-center justify-between max-w-3xl mx-auto w-full">
+        <button
+          onClick={onBack}
+          disabled={step === 0}
+          className="px-5 py-2.5 rounded-full text-sm font-medium text-gray-500 disabled:opacity-0 transition-opacity"
+        >
+          ← Back
+        </button>
+        {!hideNext && (
+          <button
+            onClick={onNext}
+            disabled={nextDisabled}
+            className="btn-primary text-white px-7 py-3 rounded-full font-semibold text-sm shadow-lg disabled:opacity-40 disabled:pointer-events-none"
+          >
+            {nextLabel || "Continue →"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 1: REMOVE YOUR LABELS ---------------------------- */
+
+function Section1({ data, setData }) {
+  const [phase, setPhase] = useState(data.removed ? 2 : 0); // 0=select, 1=animating, 2=reflect
+  const [selected, setSelected] = useState(data.selectedRoles || []);
+  const [reflection, setReflection] = useState(data.reflection || "");
+  const [words, setWords] = useState(data.words || []);
+  const [input, setInput] = useState("");
+
+  const toggle = (role) => {
+    setSelected(s => s.includes(role) ? s.filter(r => r !== role) : [...s, role]);
+  };
+
+  const removeLabels = () => {
+    setPhase(1);
+    setTimeout(() => {
+      setPhase(2);
+      setData(d => ({...d, selectedRoles: selected, removed: true}));
+    }, 900);
+  };
+
+  const addWord = () => {
+    if (!input.trim()) return;
+    const w = input.trim();
+    const newWords = [...words, w];
+    setWords(newWords);
+    setData(d => ({...d, words: newWords, reflection: ""}));
+    setInput("");
+  };
+
+  // word frequency for sizing
+  const freq = {};
+  words.forEach(w => { const k = w.toLowerCase(); freq[k] = (freq[k]||0)+1; });
+  const uniqueWords = [...new Set(words.map(w=>w.toLowerCase()))];
+
+  if (phase === 0 || phase === 1) {
+    return (
+      <div className="w-full flex flex-col items-center anim-fadeUp">
+        <p className="text-gray-600 text-center mb-6 max-w-md">
+          Select every role you carry day to day. Then we'll let them go.
+        </p>
+        <div className="flex flex-wrap gap-2.5 justify-center mb-8">
+          {ROLES_REMOVE.map(role => {
+            const isSelected = selected.includes(role);
+            return (
+              <button
+                key={role}
+                onClick={() => phase===0 && toggle(role)}
+                className={`chip px-4 py-2.5 rounded-full text-sm font-medium border-2 ${
+                  phase === 1 && isSelected ? 'anim-fadeOut' : ''
+                }`}
+                style={{
+                  borderColor: isSelected ? '#4A7C82' : '#D8E2DC',
+                  background: isSelected ? '#4A7C82' : 'white',
+                  color: isSelected ? 'white' : '#5A6B6E',
+                }}
+              >
+                {role}
+              </button>
+            );
+          })}
+        </div>
+        {phase === 0 && (
+          <button
+            onClick={removeLabels}
+            disabled={selected.length === 0}
+            className="btn-primary text-white px-8 py-3.5 rounded-full font-semibold shadow-lg disabled:opacity-30"
+          >
+            Let them go ✦
+          </button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col items-center anim-fadeUp">
+      <p className="serif text-xl md:text-2xl text-gray-700 text-center mb-1 italic">
+        "If all of these disappeared tomorrow,
+      </p>
+      <p className="serif text-xl md:text-2xl text-gray-700 text-center mb-6 italic">
+        what would remain?"
+      </p>
+
+      <div className="flex gap-2 w-full max-w-md mb-6">
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addWord()}
+          placeholder="One word or phrase..."
+          className="flex-1 px-4 py-3 rounded-full border-2 border-gray-200 focus:border-teal-600 outline-none text-sm"
+        />
+        <button onClick={addWord} className="btn-primary text-white px-5 rounded-full font-medium text-sm">
+          Add
+        </button>
+      </div>
+
+      <div className="glass-card rounded-3xl p-6 w-full min-h-[180px] flex flex-wrap gap-3 items-center justify-center content-center">
+        {words.length === 0 && (
+          <span className="text-gray-400 text-sm italic">Your words will gather here...</span>
+        )}
+        {uniqueWords.map((w, i) => {
+          const size = clamp(14 + freq[w]*8, 14, 42);
+          const colors = ['#4A7C82','#81B29A','#E07A5F','#6B5B95','#9D8189'];
+          return (
+            <span
+              key={w+i}
+              className="serif font-semibold anim-fadeUp"
+              style={{fontSize: `${size}px`, color: colors[i % colors.length], animationDelay: `${i*0.05}s`}}
+            >
+              {w}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 2: ROLE IDENTITY MAP ---------------------------- */
+
+function RadarChart({ values, id }) {
+  const canvasRef = useRef(null);
+  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    if (chartRef.current) chartRef.current.destroy();
+    const ctx = canvasRef.current.getContext('2d');
+    chartRef.current = new Chart(ctx, {
+      type: 'radar',
+      data: {
+        labels: ROLE_CATEGORIES,
+        datasets: [{
+          data: ROLE_CATEGORIES.map(c => values[c] || 0),
+          backgroundColor: 'rgba(74,124,130,0.25)',
+          borderColor: '#4A7C82',
+          borderWidth: 2.5,
+          pointBackgroundColor: '#4A7C82',
+          pointRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        animation: { duration: 600 },
+        plugins: { legend: { display: false } },
+        scales: {
+          r: {
+            min: 0, max: 10,
+            ticks: { display: false, stepSize: 2 },
+            grid: { color: '#D8E2DC' },
+            angleLines: { color: '#D8E2DC' },
+            pointLabels: { font: { size: 10, weight: '600' }, color: '#5A6B6E' }
+          }
+        }
+      }
+    });
+    return () => { if (chartRef.current) chartRef.current.destroy(); };
+  }, [JSON.stringify(values)]);
+
+  return <canvas ref={canvasRef} id={id}></canvas>;
+}
+
+function Section2({ data, setData }) {
+  const [values, setValues] = useState(data.roleValues || Object.fromEntries(ROLE_CATEGORIES.map(c => [c, 5])));
+  const [grown, setGrown] = useState(data.grown || null);
+  const [faded, setFaded] = useState(data.faded || null);
+
+  const update = (cat, val) => {
+    const nv = {...values, [cat]: parseInt(val)};
+    setValues(nv);
+    setData(d => ({...d, roleValues: nv}));
+  };
+
+  return (
+    <div className="w-full anim-fadeUp">
+      <div className="glass-card rounded-3xl p-4 mb-5 flex justify-center">
+        <div style={{maxWidth: '320px', width: '100%'}}>
+          <RadarChart values={values} id="radar1" />
+        </div>
+      </div>
+
+      <div className="space-y-3 mb-6">
+        {ROLE_CATEGORIES.map(cat => (
+          <div key={cat} className="flex items-center gap-3">
+            <span className="text-sm font-medium text-gray-600 w-32 flex-shrink-0">{cat}</span>
+            <input
+              type="range" min="0" max="10" value={values[cat]}
+              onChange={e => update(cat, e.target.value)}
+              className="flex-1"
+            />
+            <span className="text-sm font-bold text-teal-700 w-5">{values[cat]}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-3">
+        <div>
+          <p className="text-sm font-medium text-gray-600 mb-2">Which role has grown most in the last 5 years?</p>
+          <div className="flex flex-wrap gap-2">
+            {ROLE_CATEGORIES.map(c => (
+              <button key={c} onClick={() => { setGrown(c); setData(d=>({...d, grown: c})); }}
+                className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
+                style={{borderColor: grown===c?'#81B29A':'#D8E2DC', background: grown===c?'#81B29A':'white', color: grown===c?'white':'#5A6B6E'}}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="text-sm font-medium text-gray-600 mb-2">Which role has faded?</p>
+          <div className="flex flex-wrap gap-2">
+            {ROLE_CATEGORIES.map(c => (
+              <button key={c} onClick={() => { setFaded(c); setData(d=>({...d, faded: c})); }}
+                className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
+                style={{borderColor: faded===c?'#E07A5F':'#D8E2DC', background: faded===c?'#E07A5F':'white', color: faded===c?'white':'#5A6B6E'}}>
+                {c}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 3: TIME VS MEANING ---------------------------- */
+
+function Section3({ data, setData }) {
+  const hours = Array.from({length: 24}, (_,i) => i);
+  const [assignments, setAssignments] = useState(data.timeAssignments || {});
+  const [selectedActivity, setSelectedActivity] = useState(null);
+  const [meaningful, setMeaningful] = useState(data.meaningfulActivity || null);
+
+  const assign = (hour) => {
+    if (!selectedActivity) return;
+    const na = {...assignments, [hour]: selectedActivity};
+    setAssignments(na);
+    setData(d => ({...d, timeAssignments: na}));
+  };
+
+  // time totals
+  const totals = {};
+  Object.values(assignments).forEach(a => { totals[a] = (totals[a]||0) + 1; });
+
+  return (
+    <div className="w-full anim-fadeUp">
+      <p className="text-sm text-gray-600 text-center mb-3">
+        Pick an activity, then tap hours to fill your day.
+      </p>
+      <div className="flex flex-wrap gap-2 justify-center mb-5">
+        {TIME_ACTIVITIES.map(act => (
+          <button
+            key={act.name}
+            onClick={() => setSelectedActivity(act.name)}
+            className="chip px-3 py-2 rounded-full text-xs font-semibold border-2 flex items-center gap-1.5"
+            style={{
+              borderColor: selectedActivity===act.name ? act.color : '#E5E5E5',
+              background: selectedActivity===act.name ? act.color : 'white',
+              color: selectedActivity===act.name ? 'white' : '#5A6B6E',
+            }}
+          >
+            <span className="w-2 h-2 rounded-full" style={{background: selectedActivity===act.name?'white':act.color}}></span>
+            {act.name}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-6 gap-1.5 mb-6">
+        {hours.map(h => {
+          const act = assignments[h];
+          const color = act ? TIME_ACTIVITIES.find(a=>a.name===act)?.color : '#EDEAE3';
+          return (
+            <button
+              key={h}
+              onClick={() => assign(h)}
+              className="aspect-square rounded-lg flex items-center justify-center text-[10px] font-bold transition-all"
+              style={{background: color, color: act ? 'white' : '#A8A8A8'}}
+            >
+              {h}:00
+            </button>
+          );
+        })}
+      </div>
+
+      {Object.keys(totals).length > 0 && (
+        <div className="glass-card rounded-2xl p-4 mb-5">
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Hours allocated</p>
+          <div className="space-y-1.5">
+            {Object.entries(totals).map(([name, count]) => {
+              const color = TIME_ACTIVITIES.find(a=>a.name===name)?.color;
+              return (
+                <div key={name} className="flex items-center gap-2">
+                  <span className="text-xs w-24 text-gray-600">{name}</span>
+                  <div className="flex-1 h-3 rounded-full bg-gray-100 overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{width: `${(count/24)*100}%`, background: color}}></div>
+                  </div>
+                  <span className="text-xs font-bold text-gray-500 w-6">{count}h</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      <div>
+        <p className="text-sm font-medium text-gray-600 mb-2 text-center">Which activity gives you the most meaning?</p>
+        <div className="flex flex-wrap gap-2 justify-center">
+          {TIME_ACTIVITIES.map(act => (
+            <button key={act.name} onClick={() => { setMeaningful(act.name); setData(d=>({...d, meaningfulActivity: act.name})); }}
+              className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
+              style={{borderColor: meaningful===act.name?act.color:'#D8E2DC', background: meaningful===act.name?act.color:'white', color: meaningful===act.name?'white':'#5A6B6E'}}>
+              {act.name}
+            </button>
+          ))}
+        </div>
+        {meaningful && totals[meaningful] !== undefined && totals[meaningful] <= 2 && (
+          <p className="text-center text-xs text-orange-600 mt-3 italic">
+            ⚡ {meaningful} gives you the most meaning, but only got {totals[meaningful]||0} hour{totals[meaningful]===1?'':'s'} today.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 4: SECRET OCCUPATIONS ---------------------------- */
+
+function Section4({ data, setData }) {
+  const [entries, setEntries] = useState(data.secretEntries || []);
+  const [input, setInput] = useState("");
+  const [votes, setVotes] = useState(data.votes || {});
+
+  const submit = () => {
+    if (!input.trim()) return;
+    const newEntries = [...entries, { id: Date.now(), text: input.trim() }];
+    setEntries(newEntries);
+    setData(d => ({...d, secretEntries: newEntries}));
+    setInput("");
+  };
+
+  const vote = (entryId, fn) => {
+    const key = `${entryId}-${fn}`;
+    const nv = {...votes, [key]: (votes[key]||0)+1};
+    setVotes(nv);
+    setData(d => ({...d, votes: nv}));
+  };
+
+  return (
+    <div className="w-full anim-fadeUp">
+      <p className="serif text-lg text-gray-700 text-center mb-4 italic max-w-md mx-auto">
+        "What occupation helps you cope that most people would never guess?"
+      </p>
+      <div className="flex gap-2 mb-6">
+        <input
+          value={input}
+          onChange={e => setInput(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && submit()}
+          placeholder="Share anonymously..."
+          className="flex-1 px-4 py-3 rounded-full border-2 border-gray-200 focus:border-teal-600 outline-none text-sm"
+        />
+        <button onClick={submit} className="btn-primary text-white px-5 rounded-full font-medium text-sm">Share</button>
+      </div>
+
+      <div className="space-y-4">
+        {entries.length === 0 && (
+          <p className="text-center text-gray-400 text-sm italic py-8">Your shared occupation will appear below for voting...</p>
+        )}
+        {entries.map((e, i) => (
+          <div key={e.id} className="glass-card rounded-2xl p-4 anim-float" style={{animationDelay: `${i*0.3}s`}}>
+            <p className="serif text-gray-800 font-medium mb-3">"{e.text}"</p>
+            <p className="text-xs text-gray-500 mb-2">What function might this serve?</p>
+            <div className="flex flex-wrap gap-1.5">
+              {FUNCTIONS.map(fn => {
+                const key = `${e.id}-${fn}`;
+                const count = votes[key] || 0;
+                return (
+                  <button
+                    key={fn}
+                    onClick={() => vote(e.id, fn)}
+                    className="chip px-2.5 py-1 rounded-full text-[11px] font-medium border flex items-center gap-1"
+                    style={{borderColor: count>0?'#4A7C82':'#E5E5E5', background: count>0?'rgba(74,124,130,0.1)':'white', color: count>0?'#4A7C82':'#8A8A8A'}}
+                  >
+                    {fn} {count > 0 && <span className="font-bold">{count}</span>}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 5: BUILD YOUR RIVER (KAWA) ---------------------------- */
+
+function RiverSVG({ flow, rocks, driftwood, banks, eventActive }) {
+  // Map flow style to path turbulence
+  const flowStyles = {
+    "Fast & smooth": { amp: 6, freq: 2, speed: '3s', width: 110 },
+    "Steady": { amp: 10, freq: 2.5, speed: '5s', width: 100 },
+    "Slowed": { amp: 14, freq: 1.5, speed: '8s', width: 80 },
+    "Stagnant": { amp: 4, freq: 1, speed: '14s', width: 55 },
+    "Chaotic": { amp: 24, freq: 4, speed: '2s', width: 90 },
+  };
+  const style = flowStyles[flow] || flowStyles["Steady"];
+  const bankNarrow = Math.max(0, banks.length * 4);
+  const effectiveWidth = clamp(style.width - bankNarrow - rocks.length * 3, 30, 130);
+
+  return (
+    <svg viewBox="0 0 400 220" className="w-full h-auto">
+      <defs>
+        <linearGradient id="riverGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#7FB3BA" />
+          <stop offset="100%" stopColor="#4A7C82" />
+        </linearGradient>
+        <linearGradient id="bankGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#D8C9A3" />
+          <stop offset="100%" stopColor="#C2B280" />
+        </linearGradient>
+      </defs>
+
+      {/* banks */}
+      <rect x="0" y="0" width="400" height={(220-effectiveWidth)/2} fill="url(#bankGrad)" opacity={0.5 + banks.length*0.05} />
+      <rect x="0" y={220-(220-effectiveWidth)/2} width="400" height={(220-effectiveWidth)/2} fill="url(#bankGrad)" opacity={0.5 + banks.length*0.05} />
+
+      {/* river path - animated wave */}
+      <path
+        d={`M0,${110} 
+            C50,${110-style.amp} 100,${110+style.amp} 150,${110}
+            C200,${110-style.amp} 250,${110+style.amp} 300,${110}
+            C350,${110-style.amp} 380,${110+style.amp} 400,${110}`}
+        stroke="url(#riverGrad)"
+        strokeWidth={effectiveWidth}
+        fill="none"
+        strokeLinecap="round"
+        opacity={eventActive ? 0.7 : 0.95}
+      >
+        {flow !== 'Stagnant' && (
+          <animateTransform attributeName="transform" type="translate" from="0 0" to="-40 0" dur={style.speed} repeatCount="indefinite" />
+        )}
+      </path>
+
+      {/* rocks */}
+      {rocks.map((r, i) => (
+        <g key={r} transform={`translate(${60 + i*38}, ${100 + (i%2)*22})`}>
+          <ellipse cx="0" cy="0" rx="14" ry="10" fill="#8B8378" stroke="#6B6358" strokeWidth="1.5" />
+        </g>
+      ))}
+
+      {/* driftwood */}
+      {driftwood.map((d, i) => (
+        <g key={d} transform={`translate(${280 - i*34}, ${95 + (i%3)*15})`} style={{animation: `drift 3s ease-in-out infinite alternate`, animationDelay: `${i*0.4}s`}}>
+          <rect x="-12" y="-3" width="24" height="6" rx="3" fill="#A0785A" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function DragChip({ label, onSelect, selected }) {
+  return (
+    <button
+      onClick={onSelect}
+      className="chip px-3 py-1.5 rounded-full text-xs font-medium border"
+      style={{
+        borderColor: selected ? '#4A7C82' : '#D8E2DC',
+        background: selected ? '#4A7C82' : 'white',
+        color: selected ? 'white' : '#5A6B6E',
+      }}
+    >
+      {label}
+    </button>
+  );
+}
+
+function Section5({ data, setData }) {
+  const [step, setStep] = useState(0); // A flow, B rocks, C driftwood, D banks
+  const [flow, setFlow] = useState(data.flow || null);
+  const [rocks, setRocks] = useState(data.rocks || []);
+  const [driftwood, setDriftwood] = useState(data.driftwood || []);
+  const [banks, setBanks] = useState(data.banks || []);
+
+  const toggleArr = (arr, setArr, item, key) => {
+    const na = arr.includes(item) ? arr.filter(x=>x!==item) : [...arr, item];
+    setArr(na);
+    setData(d => ({...d, [key]: na}));
+  };
+
+  const subSteps = [
+    { label: "A. Water Flow", desc: "How is your river moving right now?" },
+    { label: "B. Rocks (obstacles)", desc: "What restricts your flow?" },
+    { label: "C. Driftwood (resources)", desc: "What supports you?" },
+    { label: "D. Riverbanks (environment)", desc: "What shapes your context?" },
+  ];
+
+  return (
+    <div className="w-full anim-fadeUp">
+      <div className="glass-card rounded-3xl p-4 mb-5">
+        <RiverSVG flow={flow || "Steady"} rocks={rocks} driftwood={driftwood} banks={banks} />
+      </div>
+
+      <div className="flex gap-1.5 justify-center mb-4">
+        {subSteps.map((s, i) => (
+          <button key={i} onClick={() => setStep(i)}
+            className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide"
+            style={{background: step===i?'#4A7C82':'#EDEAE3', color: step===i?'white':'#A8A8A8'}}>
+            {s.label.split('.')[0]}
+          </button>
+        ))}
+      </div>
+
+      <p className="text-sm font-semibold text-gray-700 text-center mb-1">{subSteps[step].label}</p>
+      <p className="text-xs text-gray-500 text-center mb-4">{subSteps[step].desc}</p>
+
+      <div className="flex flex-wrap gap-2 justify-center mb-4">
+        {step === 0 && FLOW_TYPES.map(f => (
+          <button key={f.name} onClick={() => { setFlow(f.name); setData(d=>({...d, flow: f.name})); }}
+            className="chip px-3 py-2 rounded-xl text-xs font-medium border-2 text-left"
+            style={{borderColor: flow===f.name?'#4A7C82':'#E5E5E5', background: flow===f.name?'rgba(74,124,130,0.1)':'white'}}>
+            <div className="font-semibold" style={{color: flow===f.name?'#4A7C82':'#5A6B6E'}}>{f.name}</div>
+            <div className="text-[10px] text-gray-400">{f.desc}</div>
+          </button>
+        ))}
+        {step === 1 && ROCKS.map(r => (
+          <DragChip key={r} label={r} selected={rocks.includes(r)} onSelect={() => toggleArr(rocks, setRocks, r, 'rocks')} />
+        ))}
+        {step === 2 && DRIFTWOOD.map(d => (
+          <DragChip key={d} label={d} selected={driftwood.includes(d)} onSelect={() => toggleArr(driftwood, setDriftwood, d, 'driftwood')} />
+        ))}
+        {step === 3 && RIVERBANKS.map(b => (
+          <DragChip key={b} label={b} selected={banks.includes(b)} onSelect={() => toggleArr(banks, setBanks, b, 'banks')} />
+        ))}
+      </div>
+
+      {step < 3 && (
+        <div className="flex justify-center">
+          <button onClick={() => setStep(step+1)} className="text-sm font-medium text-teal-700 underline">
+            Next: {subSteps[step+1].label} →
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ---------------------------- SECTION 6: LIFE EVENT + SUMMARY ---------------------------- */
+
+function Section6({ data }) {
+  const [scenario, setScenario] = useState(data.scenario || null);
+  const [spinning, setSpinning] = useState(false);
+  const [reflections, setReflections] = useState({ changed: "", lost: "", challenged: "" });
+  const summaryRef = useRef(null);
+
+  const triggerScenario = () => {
+    setSpinning(true);
+    setTimeout(() => {
+      const s = SCENARIOS[Math.floor(Math.random()*SCENARIOS.length)];
+      setScenario(s);
+      setSpinning(false);
+    }, 1200);
+  };
+
+  const downloadSnapshot = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 800; canvas.height = 1000;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#F4F1EB';
+    ctx.fillRect(0,0,800,1000);
+    ctx.fillStyle = '#3A6268';
+    ctx.font = 'bold 32px Georgia';
+    ctx.textAlign = 'center';
+    ctx.fillText('Who Are You When You Are Not Busy?', 400, 80);
+    ctx.font = '18px Georgia';
+    ctx.fillStyle = '#5A6B6E';
+    ctx.fillText('A snapshot of your river', 400, 115);
+
+    ctx.font = '16px Georgia';
+    ctx.fillStyle = '#4A7C82';
+    let y = 180;
+    ctx.textAlign = 'left';
+    ctx.font = 'bold 18px Georgia';
+    ctx.fillText('Flow:', 80, y); ctx.font = '18px Georgia'; ctx.fillText(data.flow || '—', 200, y);
+    y += 40;
+    ctx.font = 'bold 18px Georgia';
+    ctx.fillText('Rocks:', 80, y); ctx.font = '16px Georgia';
+    ctx.fillText((data.rocks||[]).join(', ') || '—', 200, y);
+    y += 40;
+    ctx.font = 'bold 18px Georgia';
+    ctx.fillText('Driftwood:', 80, y); ctx.font = '16px Georgia';
+    ctx.fillText((data.driftwood||[]).join(', ') || '—', 200, y);
+    y += 40;
+    ctx.font = 'bold 18px Georgia';
+    ctx.fillText('Riverbanks:', 80, y); ctx.font = '16px Georgia';
+    ctx.fillText((data.banks||[]).join(', ') || '—', 200, y);
+
+    y += 70;
+    ctx.font = 'italic 16px Georgia';
+    ctx.fillStyle = '#7A8B8E';
+    ctx.fillText('"This is what occupational therapists explore', 80, y);
+    ctx.fillText('when understanding everyday life."', 80, y+26);
+
+    const link = document.createElement('a');
+    link.download = 'my-river-snapshot.png';
+    link.href = canvas.toDataURL();
+    link.click();
+  };
+
+  return (
+    <div className="w-full anim-fadeUp" ref={summaryRef}>
+      <div className="text-center mb-5">
+        <button
+          onClick={triggerScenario}
+          className="btn-primary text-white px-8 py-3.5 rounded-full font-semibold shadow-lg"
+        >
+          {spinning ? "Changing the river..." : "Change the River 🌊"}
+        </button>
+      </div>
+
+      {spinning && (
+        <div className="h-2 w-full rounded-full scenario-shimmer mb-6"></div>
+      )}
+
+      {scenario && !spinning && (
+        <div className="glass-card rounded-2xl p-5 mb-6 anim-fadeUp">
+          <p className="serif text-lg font-semibold text-gray-800 mb-2">{scenario.name}</p>
+          <p className="text-xs text-gray-500 mb-2">{scenario.impact}</p>
+          <p className="text-xs font-semibold text-gray-600 mb-1">What may be lost:</p>
+          <div className="flex flex-wrap gap-1.5">
+            {scenario.lost.map(l => (
+              <span key={l} className="px-2 py-1 rounded-full text-[11px] bg-orange-50 text-orange-700 border border-orange-200">{l}</span>
+            ))}
+          </div>
+
+          <div className="mt-4 space-y-2">
+            <input placeholder="What changed?" value={reflections.changed}
+              onChange={e=>setReflections({...reflections, changed:e.target.value})}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+            <input placeholder="What occupations were lost?" value={reflections.lost}
+              onChange={e=>setReflections({...reflections, lost:e.target.value})}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+            <input placeholder="What identities were challenged?" value={reflections.challenged}
+              onChange={e=>setReflections({...reflections, challenged:e.target.value})}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 text-sm outline-none focus:border-teal-500" />
+          </div>
+        </div>
+      )}
+
+      <div className="glass-card rounded-3xl p-5 mb-5">
+        <p className="serif text-lg font-semibold text-gray-800 mb-3 text-center">Your Journey Summary</p>
+
+        <div style={{maxWidth:'260px', margin:'0 auto'}} className="mb-4">
+          <RadarChart values={data.roleValues || {}} id="radarSummary" />
+        </div>
+
+        <RiverSVG flow={data.flow || "Steady"} rocks={data.rocks||[]} driftwood={data.driftwood||[]} banks={data.banks||[]} eventActive={!!scenario} />
+
+        <div className="text-xs text-gray-600 space-y-1 mt-3">
+          <p><span className="font-semibold">Grown role:</span> {data.grown || "—"}</p>
+          <p><span className="font-semibold">Faded role:</span> {data.faded || "—"}</p>
+          <p><span className="font-semibold">Most meaningful activity:</span> {data.meaningfulActivity || "—"}</p>
+        </div>
+
+        <p className="serif italic text-sm text-gray-500 text-center mt-4 px-2">
+          "This is what occupational therapists explore when understanding everyday life."
+        </p>
+      </div>
+
+      <div className="flex gap-3 justify-center">
+        <button onClick={downloadSnapshot} className="btn-primary text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow">
+          ⬇ Download Snapshot
+        </button>
+        <button onClick={() => window.location.reload()} className="px-5 py-2.5 rounded-full text-sm font-semibold border-2 border-gray-300 text-gray-600">
+          ↺ Reset
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------------------- MAIN APP ---------------------------- */
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [data, setData] = useState({});
+  const total = 6;
+
+  const next = () => setStep(s => Math.min(total-1, s+1));
+  const back = () => setStep(s => Math.max(0, s-1));
+  const jump = (i) => setStep(i);
+
+  const sections = [
+    <Section1 data={data} setData={setData} />,
+    <Section2 data={data} setData={setData} />,
+    <Section3 data={data} setData={setData} />,
+    <Section4 data={data} setData={setData} />,
+    <Section5 data={data} setData={setData} />,
+    <Section6 data={data} />,
+  ];
+
+  return (
+    <Shell
+      step={step} total={total} onJump={jump} onNext={next} onBack={back}
+      hideNext={step === total-1}
+      nextLabel={step === 0 ? "Continue →" : "Continue →"}
+    >
+      {sections[step]}
+    </Shell>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
